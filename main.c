@@ -26,14 +26,15 @@ void assign_FIFO(process *cur_proc) {
 
 void assign_RR(process *cur_proc) {
 	pid_t cpid = fork();
+	assign_cpu(cpid, 1);	// set child process cpu = 1
 	if(cpid == 0) { // child process
 		//printf("start%d\n", getpid());
-		assign_cpu(getpid(), 1);	// set child process cpu = 1
 		set_priority(getpid(), 99);
 		long long start_time = syscall(333);
 		for(int i = 0; i < cur_proc->exec_time; i++) {
-			if(i != 0 || i != cur_proc->exec_time-1) {
+			if(i != 0 && i != cur_proc->exec_time-1) {
 				if(i % 500 == 0) {
+					//printf("%s yield %d time remain\n", cur_proc->p_name, cur_proc->exec_time-i);
 					sched_yield();
 				}
 			}
@@ -78,6 +79,7 @@ void scheduler_RR(int N, process proc[]) {
 			timer++;
 		}		
 		while(next_task < N && timer >= proc[next_task].ready_time) {
+			//printf("timer %d assign %s\n", timer, proc[next_task].p_name);
 			assign_RR(&proc[next_task]);
 			next_task++;
 		}
@@ -168,6 +170,11 @@ void scheduler_PSJF(int N, process proc[]) {
 	}
 
 }
+int cmp( const void *a, const void *b) {
+	process *pa = (process *)a;
+	process *pb = (process *)b;
+	return pa->ready_time - pb->ready_time;
+}
 int main() {
 	char policy[16];
 	int N;
@@ -177,6 +184,7 @@ int main() {
 		scanf("%s %d %d", proc[i].p_name, &proc[i].ready_time, &proc[i].exec_time);
 		proc[i].status = 0;
 	}
+	qsort(proc, N, sizeof(process), cmp);
 	assign_cpu(getpid(), 0);	// set scheduler core = 0
 	set_priority(getpid(), 99);
 	// sort proc by ready time
