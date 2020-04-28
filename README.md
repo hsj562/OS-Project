@@ -6,5 +6,5 @@
 	* PSJF: Preemptive shortest job first
 * Environment: 
 	* Kernel: Linux 4.14.25
-	* OS: Linux Ubuntu
+	* OS: Linux Ubuntu 16.04
 	* Programming Language: C
