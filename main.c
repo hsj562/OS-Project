@@ -89,9 +89,9 @@ void scheduler_RR(int N, process proc[]) {
 	}
 	for(int i = 0; i < N; ++i) wait(NULL);
 }
-int select_task(int N, process proc[], int *timer) {
+int select_task(int N, process proc[], const int timer) {
 	for(int i = 0; i < N; ++i) 
-		if(proc[i].status == 0 && proc[i].ready_time <= *timer) proc[i].status = 1;
+		if(proc[i].status == 0 && proc[i].ready_time <= timer) proc[i].status = 1;
 	int next = -1;
 	int min_exec = 1<<30;
 	for(int i = 0; i < N; ++i) {
@@ -110,15 +110,14 @@ void scheduler_SJF(int N, process proc[]) {
 	int timer = 0;
 	int finish = 0;
 	while(finish < N) {
-		next_task = select_task(N, proc, &timer);
+		next_task = select_task(N, proc, timer);
 		while(finish < N && next_task == -1) {
 			unit_time();
 			timer++;
-			next_task = select_task(N, proc, &timer);
+			next_task = select_task(N, proc, timer);
 		}
-		//printf("select: %d\n", next_task);
 		assign_FIFO(&proc[next_task]);
-		set_priority(proc[next_task].pid, 99);		
+		set_priority(proc[next_task].pid, 99);
 		timer += proc[next_task].exec_time;
 		finish++;
 		wait(NULL);
@@ -158,13 +157,14 @@ void scheduler_PSJF(int N, process proc[]) {
 			set_priority(proc[cur_task].pid, 50);
 		}
 		timer += running_time;
+		for(int i = 0; i < running_time; ++i) unit_time();
 		running_time = 0;
 		while(next_task < N && timer >= proc[next_task].ready_time) {
 			assign_FIFO(&proc[next_task]);
 			next_task++;
 		}
 		if(finish == N) continue;
-		cur_task = select_task(N, proc, &timer);
+		cur_task = select_task(N, proc, timer);
 		//printf("select %d\n", cur_task);
 		set_priority(proc[cur_task].pid, 99);		
 	}
