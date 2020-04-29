@@ -157,7 +157,6 @@ void scheduler_PSJF(int N, process proc[]) {
 			set_priority(proc[cur_task].pid, 50);
 		}
 		timer += running_time;
-		for(int i = 0; i < running_time; ++i) unit_time();
 		running_time = 0;
 		while(next_task < N && timer >= proc[next_task].ready_time) {
 			assign_FIFO(&proc[next_task]);
